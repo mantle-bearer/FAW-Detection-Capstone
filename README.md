@@ -93,7 +93,8 @@ The trained model will be exported to **ONNX format**, making it ready for real-
 - Kazeem
 - Similoluwa
 - Chinazor
-- Lawal 
+- Lawal
+  
 **Instructor/Supervisor:** Mr. Hammed OBASEKORE
 
 ---
