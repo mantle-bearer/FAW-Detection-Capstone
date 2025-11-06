@@ -83,7 +83,9 @@ The trained model will be exported to **ONNX format**, making it ready for real-
 3. [roboflow](#)
  
  -**Total number of Datasets collected from these sources:2,992 Images**
+ 
  -**Number of images with FAW damage:1,882**
+ 
  -**Number of images with no FAW damage (Healthy Crops):1,110 images**
 
    ---
