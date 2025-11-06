@@ -78,17 +78,17 @@ The trained model will be exported to **ONNX format**, making it ready for real-
 ---
 
 ## Data Sources
-1. [Kaggle](#)
-2. [Google](#)
-3. [roboflow](#)
+1. [Kaggle](https://www.kaggle.com/datasets/gauravduttakiit/armyworm-crop-challenge)
+2. [Google](https://www.google.com/search?sa=X&sca_esv=87839103094c6a77&rlz=1CDGOYI_enUS1110US1111&hl=en-US&udm=2&sxsrf=AE3TifOP8ZwH2Ie9XcBCSjQxbABsqomYXw:1762340176363&q=maiz&stick=H4sIAAAAAAAAAFvEypKbmFkFAE_so2wHAAAA&source=univ&ved=2ahUKEwjTzL3h7NqQAxVa_8kDHWw3DWIQrNwCegUI0AEQAA&biw=375&bih=640&dpr=3)
+3. [Roboflow](https://universe.roboflow.com/gluwxy-nqeon/fall_armyworm-detection)
  
- -**Total number of Datasets collected from these sources:2,992 Images**
+- Total number of Datasets collected from these sources: = 2,992 Images
  
- -**Number of images with FAW damage:1,882**
+- Number of FAW images: = 1,882
  
- -**Number of images with no FAW damage (Healthy Crops):1,110 images**
+- Number of No FAW images: = 1,110 images
 
-   ---
+---
    
 ## 👥 Team
 
@@ -116,7 +116,7 @@ The trained model will be exported to **ONNX format**, making it ready for real-
 
 ## 📚 References
 
-- [FAW Dataset Source](#)  
+- [Final Dataset Source](https://drive.google.com/drive/folders/1yP-eU-6Itm0Vb_wbMAcyJtpqPfkkQ3E5?usp=sharing)
 - [ONNX Documentation](https://onnx.ai/)  
 - [TensorFlow](https://www.tensorflow.org/) / [PyTorch](https://pytorch.org/)  
 - [Teachable Machine](https://teachablemachine.withgoogle.com/)
