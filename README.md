@@ -102,9 +102,9 @@ This section guides you through setting up and running the **Fall Armyworm Super
 1. Visit [Google Colab](https://colab.research.google.com/).
 2. Click on **File → Open Notebook → GitHub**.
 3. Paste the repository link (e.g., `https://github.com/mantle-bearer/FAW-Detection-Capstone`).
-4. Open the notebook file (usually named `FAW_Detection.ipynb` or similar).
+4. Open the notebook file (named `FAW_Detection.ipynb`).
 
-Alternatively, you can open it directly by clicking the **“Open in Colab”** badge if included in the repository.
+Alternatively, you can open it directly by clicking the **“Open in Colab”** badge included in the github repository.
 
 ---
 
@@ -118,7 +118,7 @@ drive.mount('/content/drive')
 ```
 Once mounted, ensure your working directory points to your project folder:
 ```python
-%cd /content/drive/MyDrive/FAW_Detection_Capstone/
+%base_dir = "/content/drive/MyDrive/FAW_Dataset/"
 ```
 
 ---
@@ -128,22 +128,29 @@ Once mounted, ensure your working directory points to your project folder:
 Google Colab comes with many pre-installed libraries.
 However, to ensure full compatibility, install any missing dependencies using:
 ```python
-!pip install tensorflow keras scikit-learn matplotlib opencv-python onnx onnxruntime
+!pip install keras-tuner --upgrade
+
+# Uninstall conflicting packages
+!pip uninstall -y protobuf tf2onnx onnx
+
+# Install compatible versions
+!pip install protobuf==3.20.3
+!pip install tf2onnx==1.15.1
+!pip install onnx==1.13.1
 ```
-You can also include any other libraries your notebook references (e.g., pandas, torch, albumentations).
 
 ---
 
 ### 4. Load the Dataset
 
-A custom Fall Armyworm (FAW) dataset will be provided during the bootcamp.
+The custom Fall Armyworm (FAW) dataset has been provided for training the model.
 To load it into Colab:
 
-Upload it to your Google Drive (e.g., /MyDrive/FAW_Dataset/).
+Upload the final [dataset](https://drive.google.com/drive/folders/1yP-eU-6Itm0Vb_wbMAcyJtpqPfkkQ3E5?usp=sharing) to your Google Drive (e.g., /MyDrive/FAW_Dataset/).
 
-Extract the dataset if it’s compressed:
+Extract the dataset:
 1. Upload it to your Google Drive (e.g., /MyDrive/FAW_Dataset/).
-2. Extract the dataset if it’s compressed:
+2. Extract the dataset if:
    ```python
    import zipfile
    with zipfile.ZipFile('/content/drive/MyDrive/FAW_Dataset.zip', 'r') as zip_ref:
@@ -159,7 +166,8 @@ Extract the dataset if it’s compressed:
    
 ### 5. Run the Notebook Cells Sequentially
 
--   Run each cell in order from top to bottom:
+Run each cell in order from top to bottom:
+
 -   Data Loading
 -   Preprocessing & Augmentation
 -   Model Building & Training
@@ -175,19 +183,21 @@ Avoid skipping cells to maintain reproducibility.
 
 Once training is complete, save your best-performing model to Drive:
 ```
-model.save('/content/drive/MyDrive/FAW_Model/FAW_Classifier.h5')
+# Save the fine-tuned model in Keras format
+fine_tune_model.save(f"{best_model_name}_finetuned_final.keras")
 ```
 
 Convert to ONNX format for deployment compatibility:
 ```python
-import tf2onnx
-import tensorflow as tf
+# Define ONNX file name
+onnx_model_path = f"{best_model_name}_finetuned_final.onnx"
 
-model = tf.keras.models.load_model('/content/drive/MyDrive/FAW_Model/FAW_Classifier.h5')
+# Convert TensorFlow/Keras model to ONNX
 spec = (tf.TensorSpec((None, 224, 224, 3), tf.float32, name="input"),)
-output_path = "/content/drive/MyDrive/FAW_Model/FAW_Classifier.onnx"
-model_proto, _ = tf2onnx.convert.from_keras(model, input_signature=spec, output_path=output_path)
-print("✅ Model successfully exported to ONNX!")
+onnx_model, _ = tf2onnx.convert.from_keras(fine_tune_model, input_signature=spec, opset=13)
+
+# Save the ONNX model
+onnx.save(onnx_model, onnx_model_path)
 ```
 ---
 
@@ -195,12 +205,9 @@ print("✅ Model successfully exported to ONNX!")
 
 To ensure your exported ONNX model works properly:
 ```python
-import onnx
-import onnxruntime as ort
-
-onnx_model = onnx.load('/content/drive/MyDrive/FAW_Model/FAW_Classifier.onnx')
+onnx_model = onnx.load(onnx_model_path')
 onnx.checker.check_model(onnx_model)
-print("✅ ONNX Model is valid and ready for deployment.")
+print("ONNX Model is valid and ready for deployment.")
 ```
 ---
 
