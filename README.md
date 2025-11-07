@@ -91,79 +91,136 @@ The trained model will be exported to **ONNX format**, making it ready for real-
 
 ---
 
-## 🛠️ Setup Instructions
+## 🛠️ Setup Instructions (Google Colab Only)
 
-Follow these steps to get the **Fall Armyworm Supervised Learning Model Classification** project running on your **Google Colab** environment.
-
----
-
-### **1. Open Repository In Google Colab (Recommended)**
-Open the repository in **Google Colab** and mount your **Google Drive** for storing the data.
+This section guides you through setting up and running the **Fall Armyworm Supervised AI Detection** project entirely in **Google Colaboratory (Colab)** — no local installation is required.
 
 ---
 
-### **2. Set Up Google Colab **
+### 1. Open in Google Colab
 
-1. **Open Colab**:
-   Go to [Google Colab](https://colab.research.google.com/) and open the notebook from **Google Drive**.
+1. Visit [Google Colab](https://colab.research.google.com/).
+2. Click on **File → Open Notebook → GitHub**.
+3. Paste the repository link (e.g., `https://github.com/mantle-bearer/FAW-Detection-Capstone`).
+4. Open the notebook file (usually named `FAW_Detection.ipynb` or similar).
 
-2. **Mount Google Drive**:
-   Mount your Google Drive to access the dataset and save the trained models.
+Alternatively, you can open it directly by clicking the **“Open in Colab”** badge if included in the repository.
 
+---
+
+### 2. Mount Google Drive
+
+Mount your Google Drive to access and save datasets, logs, and trained models.
+
+```python
+from google.colab import drive
+drive.mount('/content/drive')
+```
+Once mounted, ensure your working directory points to your project folder:
+```python
+%cd /content/drive/MyDrive/FAW_Detection_Capstone/
+```
+
+---
+
+### 3. Install Dependencies
+
+Google Colab comes with many pre-installed libraries.
+However, to ensure full compatibility, install any missing dependencies using:
+```python
+!pip install tensorflow keras scikit-learn matplotlib opencv-python onnx onnxruntime
+```
+You can also include any other libraries your notebook references (e.g., pandas, torch, albumentations).
+
+---
+
+### 4. Load the Dataset
+
+A custom Fall Armyworm (FAW) dataset will be provided during the bootcamp.
+To load it into Colab:
+
+Upload it to your Google Drive (e.g., /MyDrive/FAW_Dataset/).
+
+Extract the dataset if it’s compressed:
+1. Upload it to your Google Drive (e.g., /MyDrive/FAW_Dataset/).
+2. Extract the dataset if it’s compressed:
    ```python
-   from google.colab import drive
-   drive.mount('/content/drive')
+   import zipfile
+   with zipfile.ZipFile('/content/drive/MyDrive/FAW_Dataset.zip', 'r') as zip_ref:
+   zip_ref.extractall('/content/drive/MyDrive/FAW_Dataset/')
    ```
 
-3. **Dataset**:
-   Make sure the **Fall Armyworm dataset** is available in your **Google Drive**. You can use the **shared link** from the **Data Sources** section to download it.
+3. Confirm dataset accessibility:
+   ```python
+   import os
+   os.listdir('/content/drive/MyDrive/FAW_Dataset/')
+   ```
+---
+   
+### 5. Run the Notebook Cells Sequentially
+
+-   Run each cell in order from top to bottom:
+-   Data Loading
+-   Preprocessing & Augmentation
+-   Model Building & Training
+-   Evaluation
+-   Export to ONNX
+
+Each step is clearly labeled within the Colab notebook.
+Avoid skipping cells to maintain reproducibility.
 
 ---
 
-### **3. Model Training and Export to ONNX**
+### 6. Save Your Trained Model
 
-* After setting up, **train your model** (if not already done) using the provided Google Colab notebook.
-* Once the training is complete, **export the model to ONNX** format using the script provided in the notebook.
+Once training is complete, save your best-performing model to Drive:
+```
+model.save('/content/drive/MyDrive/FAW_Model/FAW_Classifier.h5')
+```
 
-Example:
+Convert to ONNX format for deployment compatibility:
+```python
+import tf2onnx
+import tensorflow as tf
 
+model = tf.keras.models.load_model('/content/drive/MyDrive/FAW_Model/FAW_Classifier.h5')
+spec = (tf.TensorSpec((None, 224, 224, 3), tf.float32, name="input"),)
+output_path = "/content/drive/MyDrive/FAW_Model/FAW_Classifier.onnx"
+model_proto, _ = tf2onnx.convert.from_keras(model, input_signature=spec, output_path=output_path)
+print("✅ Model successfully exported to ONNX!")
+```
+---
+
+### 7. Verify ONNX Model
+
+To ensure your exported ONNX model works properly:
 ```python
 import onnx
-onnx.save(onnx_model, 'faw_model.onnx')
-```
+import onnxruntime as ort
 
-Upload the **`model.onnx`** to your **FastAPI app** directory for inference.
-
----
-
-### **4. Deployment (Optional)**
-
-* The **ONNX model** can be loaded into the deployed server for real-time inference.
-
----
-
-### **5. Troubleshooting**
-
-If you encounter issues while running the **Fall Armyworm Detection Model** in **Google Colab**, here are common problems and their fixes:
-
----
-
- ⚠️ 1. **"ModuleNotFoundError" or "Package Not Found"**
-
-**Cause:**  
-Some required libraries might not be pre-installed in Colab.
-
-**Fix:**  
-Re-run the installation cell to ensure all dependencies are installed correctly:
-
-```python
-!pip install tensorflow keras matplotlib scikit-learn opencv-python
+onnx_model = onnx.load('/content/drive/MyDrive/FAW_Model/FAW_Classifier.onnx')
+onnx.checker.check_model(onnx_model)
+print("✅ ONNX Model is valid and ready for deployment.")
 ```
 ---
 
-This section should provide a clear setup path for running the project in **Google Colab**.
+### 8. Proceed to Evaluation and Documentation
+
+After confirming successful training and export:
+
+-   Record metrics (Accuracy, Precision, Recall, F1-Score).
+-   Document data preprocessing, architecture choice, training process, and results directly within the Colab notebook (using Markdown cells).
+-   Ensure all visuals (graphs, confusion matrices) are properly displayed.
 
 ---
+
+💡 Tip: Always connect to a GPU runtime for faster training.
+Go to Runtime → Change runtime type → Hardware accelerator → GPU.
+
+✅ You’re now ready to train, evaluate, and document your Fall Armyworm Detection Model entirely in Google Colab.
+
+---
+
 ## 👥 Team
 
 **Team Name:** Group U 
