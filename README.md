@@ -48,6 +48,7 @@ The trained model will be exported to **ONNX format**, making it ready for real-
 2. **Model Selection & Training**
    - Train using CNN to train models (e.g., MobileNetV2, EfficientNetB0, ResNet50)  
    - Pick the best performing model using f1-score and recall metrics to evaluate (DenseNet121)
+   - Tune hyperparameters for optimal accuracy   
 
 4. **Evaluation**
    - Measure Accuracy, Precision, Recall, and F1-Score  
@@ -92,25 +93,16 @@ The trained model will be exported to **ONNX format**, making it ready for real-
 
 ## 🛠️ Setup Instructions
 
-Follow these steps to get the **Fall Armyworm Supervised Learning Model Classification** project running on your local machine or in the **Google Colab** environment.
+Follow these steps to get the **Fall Armyworm Supervised Learning Model Classification** project running on your **Google Colab** environment.
 
 ---
 
-### **1. Clone the Repository**
-
-Start by cloning the project repository to your local system or directly open it in **Google Colab**.
-
-```bash
-https://github.com/mantle-bearer/FAW-Detection-Capstone
-````
-
-Or, if you're using **Google Colab**, open the repository directly there and mount your **Google Drive** for storing the data.
+### **1. Open Repository In Google Colab (Recommended)**
+Open the repository in **Google Colab** and mount your **Google Drive** for storing the data.
 
 ---
 
-### **2. Set Up Google Colab (Recommended)**
-
-If you're running the project on **Google Colab**, you don't need to install anything locally.
+### **2. Set Up Google Colab **
 
 1. **Open Colab**:
    Go to [Google Colab](https://colab.research.google.com/) and open the notebook from **Google Drive**.
