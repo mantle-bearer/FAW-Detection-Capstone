@@ -221,10 +221,68 @@ After confirming successful training and export:
 
 ---
 
-💡 Tip: Always connect to a GPU runtime for faster training.
+> 💡 Tip: Always connect to a GPU runtime for faster training.
 Go to Runtime → Change runtime type → Hardware accelerator → GPU.
 
 ✅ You’re now ready to train, evaluate, and document your Fall Armyworm Detection Model entirely in Google Colab.
+
+---
+
+## 🚧 Challenges Faced and Future Work
+
+This section highlights the key challenges encountered during the development of the **Fall Armyworm Supervised AI Detection Model** and outlines potential areas for improvement and future exploration.
+
+---
+
+### ⚠️ Challenges Faced
+
+1. **Limited and Imbalanced Dataset**
+   - The available Fall Armyworm dataset had fewer samples for certain infestation stages (e.g., pupae or early larvae), which affected model balance.
+   - Data augmentation techniques were used to increase diversity, but more real-world samples are needed to improve generalization.
+
+2. **Compute Resource Constraints**
+   - Running deep learning models in **Google Colab** occasionally led to runtime disconnections and limited GPU time.
+   - This sometimes restricted the number of epochs or hyperparameter tuning sessions that could be performed.
+
+3. **Model Overfitting**
+   - Early versions of the model achieved high accuracy on the training set but performed poorly on validation data.
+   - This was mitigated using dropout layers, early stopping, and regularization techniques.
+
+4. **ONNX Export Compatibility**
+   - Converting the TensorFlow/Keras model to **ONNX** format initially caused compatibility warnings due to unsupported layers.
+   - Adjusting the model architecture and using the `tf2onnx` library resolved this issue.
+
+5. **Image Quality Variations**
+   - Field images of Fall Armyworm infestations varied significantly in lighting, background, and angle.
+   - Preprocessing (resizing, normalization, contrast adjustment) helped reduce this effect.
+
+---
+
+### 🌱 Future Work
+
+1. **Dataset Expansion and Refinement**
+   - Collaborate with agricultural researchers to collect a larger, more balanced dataset with multiple infestation conditions.
+   - Introduce more diverse data sources (e.g., drone or satellite images) for broader model adaptability.
+
+2. **Advanced Model Architectures**
+   - Explore lightweight but powerful architectures like **MobileNetV3**, **EfficientNet**, or **Vision Transformers (ViT)** for improved accuracy and efficiency.
+   - Implement ensemble learning to combine predictions from multiple models.
+
+3. **Model Deployment and Real-World Testing**
+   - Integrate the exported ONNX model into a **mobile or web app** for real-time FAW detection.
+   - Test the model in real farm environments using smartphone or drone imagery.
+
+4. **Explainable AI (XAI) Integration**
+   - Incorporate visualization techniques such as **Grad-CAM** or **LIME** to highlight which parts of the image influenced the model’s prediction.
+   - This helps in building trust and interpretability among users and agricultural experts.
+
+5. **Automation and Continuous Improvement**
+   - Automate model retraining pipelines using new data collected from deployed systems.
+   - Enable active learning where the model improves continuously from user feedback.
+
+---
+
+> 💡 **In summary:** While the current model successfully demonstrates Fall Armyworm detection using supervised learning in Colab, expanding the dataset, improving model robustness, and deploying the system in real agricultural contexts will make it even more impactful and production-ready.
 
 ---
 
