@@ -46,14 +46,14 @@ The trained model will be exported to **ONNX format**, making it ready for real-
    - Clean and augment images (rotation, flipping, resizing)  
 
 2. **Model Selection & Training**
-   - Train using CNN or lightweight architectures (e.g., MobileNet, ResNet18)  
-   - Tune hyperparameters for optimal accuracy  
+   - Train using CNN to train models (e.g., MobileNetV2, EfficientNetB0, ResNet50)  
+   - Pick the best performing model using f1-score and recall metrics to evaluate (DenseNet121)
 
-3. **Evaluation**
+4. **Evaluation**
    - Measure Accuracy, Precision, Recall, and F1-Score  
    - Visualize training and validation performance  
 
-4. **ONNX Export**
+5. **ONNX Export**
    - Convert the trained model to ONNX format for portability  
 
 ---
@@ -82,14 +82,96 @@ The trained model will be exported to **ONNX format**, making it ready for real-
 2. [Google](https://www.google.com/search?sa=X&sca_esv=87839103094c6a77&rlz=1CDGOYI_enUS1110US1111&hl=en-US&udm=2&sxsrf=AE3TifOP8ZwH2Ie9XcBCSjQxbABsqomYXw:1762340176363&q=maiz&stick=H4sIAAAAAAAAAFvEypKbmFkFAE_so2wHAAAA&source=univ&ved=2ahUKEwjTzL3h7NqQAxVa_8kDHWw3DWIQrNwCegUI0AEQAA&biw=375&bih=640&dpr=3)
 3. [Roboflow](https://universe.roboflow.com/gluwxy-nqeon/fall_armyworm-detection)
  
-- Total number of Datasets collected from these sources: = 2,992 Images
+- Total number of Datasets collected from these sources: = 2,989 Images
  
 - Number of FAW images: = 1,882
  
-- Number of No FAW images: = 1,110 images
+- Number of No FAW images: = 1,107 images
 
 ---
-   
+
+## 🛠️ Setup Instructions
+
+Follow these steps to get the **Fall Armyworm Supervised Learning Model Classification** project running on your local machine or in the **Google Colab** environment.
+
+---
+
+### **1. Clone the Repository**
+
+Start by cloning the project repository to your local system or directly open it in **Google Colab**.
+
+```bash
+https://github.com/mantle-bearer/FAW-Detection-Capstone
+````
+
+Or, if you're using **Google Colab**, open the repository directly there and mount your **Google Drive** for storing the data.
+
+---
+
+### **2. Set Up Google Colab (Recommended)**
+
+If you're running the project on **Google Colab**, you don't need to install anything locally.
+
+1. **Open Colab**:
+   Go to [Google Colab](https://colab.research.google.com/) and open the notebook from **Google Drive**.
+
+2. **Mount Google Drive**:
+   Mount your Google Drive to access the dataset and save the trained models.
+
+   ```python
+   from google.colab import drive
+   drive.mount('/content/drive')
+   ```
+
+3. **Dataset**:
+   Make sure the **Fall Armyworm dataset** is available in your **Google Drive**. You can use the **shared link** from the **Data Sources** section to download it.
+
+---
+
+### **3. Model Training and Export to ONNX**
+
+* After setting up, **train your model** (if not already done) using the provided Google Colab notebook.
+* Once the training is complete, **export the model to ONNX** format using the script provided in the notebook.
+
+Example:
+
+```python
+import onnx
+onnx.save(onnx_model, 'faw_model.onnx')
+```
+
+Upload the **`model.onnx`** to your **FastAPI app** directory for inference.
+
+---
+
+### **4. Deployment (Optional)**
+
+* The **ONNX model** can be loaded into the deployed server for real-time inference.
+
+---
+
+### **5. Troubleshooting**
+
+If you encounter issues while running the **Fall Armyworm Detection Model** in **Google Colab**, here are common problems and their fixes:
+
+---
+
+ ⚠️ 1. **"ModuleNotFoundError" or "Package Not Found"**
+
+**Cause:**  
+Some required libraries might not be pre-installed in Colab.
+
+**Fix:**  
+Re-run the installation cell to ensure all dependencies are installed correctly:
+
+```python
+!pip install tensorflow keras matplotlib scikit-learn opencv-python
+```
+---
+
+This section should provide a clear setup path for running the project in **Google Colab**.
+
+---
 ## 👥 Team
 
 **Team Name:** Group U 
