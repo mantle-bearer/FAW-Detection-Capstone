@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FAW Detection App</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f8fafc;
+      color: #222;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    h1 {
+      color: #006400;
+      margin-bottom: 10px;
+    }
+    .upload-box {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      width: 90%;
+      max-width: 400px;
+    }
+    input[type="file"] {
+      margin: 15px 0;
+    }
+    img {
+      max-width: 100%;
+      border-radius: 8px;
+      margin-top: 10px;
+      display: none;
+    }
+    button {
+      background-color: #006400;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background-color: #228b22;
+    }
+    #result {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    @media (max-width: 500px) {
+      h1 { font-size: 20px; }
+      button { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <h1>🌾 FAW Detection Classifier</h1>
+  <p>Upload a crop image to check for Fall Armyworm (FAW) damage.</p>
+
+  <div class="upload-box">
+    <input type="file" id="fileInput" accept="image/*">
+    <img id="preview" alt="Preview">
+    <button onclick="predict()">Classify Image</button>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    // deployed API endpoint
+    const API_URL = "https://faw-detection-capstone.onrender.com/predict";
+
+    const fileInput = document.getElementById('fileInput');
+    const preview = document.getElementById('preview');
+    const resultBox = document.getElementById('result');
+
+    // Show image preview
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files[0];
+      if (file) {
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = 'block';
+        resultBox.textContent = '';
+      }
+    });
+
+    async function predict() {
+      const file = fileInput.files[0];
+      if (!file) {
+        alert("Please select an image first.");
+        return;
+      }
+
+      resultBox.textContent = "⏳ Analyzing... Please wait.";
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const response = await fetch(API_URL, {
+          method: "POST",
+          body: formData
+        });
+
+        if (!response.ok) throw new Error("Failed to get prediction.");
+
+        const data = await response.json();
+        const label = data.label || "Unknown";
+        const score = (data.score * 100).toFixed(2);
+
+        if (label.toLowerCase().includes("faw")) {
+          resultBox.textContent = `🐛 The image likely shows *FAW Damage* (Confidence: ${score}%)`;
+          resultBox.style.color = "red";
+        } else if (label.toLowerCase().includes("no")) {
+          resultBox.textContent = `🌿 The image looks *Healthy* (Confidence: ${score}%)`;
+          resultBox.style.color = "green";
+        } else {
+          resultBox.textContent = `🤔 Unable to confidently classify this image. Please try another.`;
+          resultBox.style.color = "#555";
+        }
+
+      } catch (error) {
+        resultBox.textContent = "⚠️ Error: " + error.message;
+        resultBox.style.color = "orange";
+      }
+    }
+  </script>
+</body>
+</html>
