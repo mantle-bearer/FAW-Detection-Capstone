@@ -321,3 +321,11 @@ This section highlights the key challenges encountered during the development of
 
 ### 🧾 License
 This project is for academic and research purposes only under the Techcrush AI Bootcamp 2025 Capstone framework.
+
+---
+
+## Contributors
+
+Thank you to all the contributors who made this project possible. You can find the list of contributors in the following link:
+
+[Contributors Spreadsheet](https://docs.google.com/spreadsheets/d/1325imUEKErwBUiE0rWL2emz-M7tHIJpYyWQ1L1rQsfo/edit?usp=sharing)
