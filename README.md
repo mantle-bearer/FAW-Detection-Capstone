@@ -62,7 +62,7 @@ The trained model will be exported to **ONNX format**, making it ready for real-
 ## 📊 Deliverables
 
 - ✅ **Google Colab Notebook**: End-to-end implementation (Data → Model → Evaluation → Export)  
-- ✅ **ONNX Model File**: Final trained model (`model.onnx`)  
+- ✅ **ONNX Model File**: Final trained model (`DenseNet121_finetuned_final.onnx`)  
 - ✅ **Documentation**: Clear explanation of pipeline, dataset, results, and deployment readiness  
 - ✅ **Presentation Slides**: Summary of results and key findings  
 
@@ -102,7 +102,7 @@ This section guides you through setting up and running the **Fall Armyworm Super
 1. Visit [Google Colab](https://colab.research.google.com/).
 2. Click on **File → Open Notebook → GitHub**.
 3. Paste the repository link (e.g., `https://github.com/mantle-bearer/FAW-Detection-Capstone`).
-4. Open the notebook file (named `FAW_Detection.ipynb`).
+4. Open the notebook file (named `Final_Group_U_Capstone_Project.ipynb`).
 
 Alternatively, you can open it directly by clicking the **“Open in Colab”** badge included in the github repository.
 
@@ -118,7 +118,7 @@ drive.mount('/content/drive')
 ```
 Once mounted, ensure your working directory points to your project folder:
 ```python
-%base_dir = "/content/drive/MyDrive/FAW_Dataset/"
+base_dir = "/content/drive/My Drive/Colab Notebooks/fall_armyworm"
 ```
 
 ---
@@ -149,18 +149,20 @@ To load it into Colab:
 Upload the final [dataset](https://drive.google.com/drive/folders/1yP-eU-6Itm0Vb_wbMAcyJtpqPfkkQ3E5?usp=sharing) to your Google Drive (e.g., /MyDrive/FAW_Dataset/).
 
 Extract the dataset:
-1. Upload it to your Google Drive (e.g., /MyDrive/FAW_Dataset/).
+1. Upload it to your Google Drive (e.g., /content/drive/My Drive/Colab Notebooks).
 2. Extract the dataset if:
    ```python
    import zipfile
-   with zipfile.ZipFile('/content/drive/MyDrive/FAW_Dataset.zip', 'r') as zip_ref:
-   zip_ref.extractall('/content/drive/MyDrive/FAW_Dataset/')
+   with zipfile.ZipFile('/content/drive/My Drive/Colab Notebooks/fall_armyworm.zip', 'r') as zip_ref:
+   zip_ref.extractall('/content/drive/My Drive/Colab Notebooks/fall_armyworm')
    ```
+
+   Alternatively you can extract the downloaded zipped file locally and upload on your Google drive as a folder.
 
 3. Confirm dataset accessibility:
    ```python
    import os
-   os.listdir('/content/drive/MyDrive/FAW_Dataset/')
+   os.listdir('/content/drive/My Drive/Colab Notebooks/fall_armyworm')
    ```
 ---
    
@@ -190,28 +192,20 @@ fine_tune_model.save(f"{best_model_name}_finetuned_final.keras")
 Convert to ONNX format for deployment compatibility:
 ```python
 # Define ONNX file name
-onnx_model_path = f"{best_model_name}_finetuned_final.onnx"
+onnx_model_path = f"DenseNet121_finetuned_final.onnx"
 
+model = load_model(f"DenseNet121_finetuned_final.keras")
 # Convert TensorFlow/Keras model to ONNX
 spec = (tf.TensorSpec((None, 224, 224, 3), tf.float32, name="input"),)
-onnx_model, _ = tf2onnx.convert.from_keras(fine_tune_model, input_signature=spec, opset=13)
+onnx_model, _ = tf2onnx.convert.from_keras(model, input_signature=spec, opset=13)
 
 # Save the ONNX model
 onnx.save(onnx_model, onnx_model_path)
+print(f"ONNX model saved as {onnx_model_path}")
 ```
 ---
 
-### 7. Verify ONNX Model
-
-To ensure your exported ONNX model works properly:
-```python
-onnx_model = onnx.load(onnx_model_path')
-onnx.checker.check_model(onnx_model)
-print("ONNX Model is valid and ready for deployment.")
-```
----
-
-### 8. Proceed to Evaluation and Documentation
+### 7. Proceed to Evaluation and Documentation
 
 After confirming successful training and export:
 
@@ -224,7 +218,7 @@ After confirming successful training and export:
 > 💡 Tip: Always connect to a GPU runtime for faster training.
 Go to Runtime → Change runtime type → Hardware accelerator → GPU.
 
-✅ You’re now ready to train, evaluate, and document your Fall Armyworm Detection Model entirely in Google Colab.
+You’re now ready to train, evaluate, and document your Fall Armyworm Detection Model entirely in Google Colab.
 
 ---
 
