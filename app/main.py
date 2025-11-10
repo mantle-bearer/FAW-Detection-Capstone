@@ -4,7 +4,9 @@ from typing import Tuple
 
 import numpy as np
 import onnxruntime as ort
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
 
 # Configuration
@@ -12,8 +14,16 @@ MODEL_PATH = os.getenv("MODEL_PATH", "DenseNet121_finetuned_final.onnx")
 IMG_SIZE = (224, 224)
 PREPROCESS = os.getenv("PREPROCESS", "0-1")  # options: '0-1' or 'imagenet'
 
-app = FastAPI(title="FAW Detection - ONNX Runtime")
+app = FastAPI(title="FAW Detection API", version="1.0.0")
 
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins (or specify: ["https://your-domain.com"])
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 def load_session(path: str) -> Tuple[ort.InferenceSession, dict]:
     """Load ONNX model and return session and input metadata."""
