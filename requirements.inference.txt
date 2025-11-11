@@ -1,6 +1,20 @@
+# Core Web Framework
 fastapi==0.95.2
 uvicorn[standard]==0.22.0
+
+# ML and ONNX Inference
 onnxruntime
-pillow
 numpy
+pillow
+
+# File Upload Support
 python-multipart
+
+# HTTP Requests (for Hugging Face Inference API)
+requests
+
+# Optional: load .env files for API keys
+python-dotenv
+
+# Optional (recommended) for browser access
+starlette
