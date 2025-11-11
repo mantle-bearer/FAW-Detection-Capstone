@@ -25,8 +25,8 @@
       border-radius: 15px;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
       padding: 25px;
-      max-width: 440px;
       text-align: center;
+      margin-bottom: 20px; /* Added margin to separate sections */
     }
     h1 {
       color: #1b4332;
@@ -40,7 +40,6 @@
       max-width: 100%;
       margin-top: 15px;
       border-radius: 10px;
-      display: none;
     }
     .progress {
       height: 10px;
@@ -54,6 +53,10 @@
       margin-top: 25px;
       font-size: 0.85rem;
       color: #555;
+    }
+    .info-container {
+      margin-top: 20px; /* Spacing before the info box */
+      text-align: left;
     }
   </style>
 </head>
@@ -121,33 +124,58 @@
 
       return (
         <div className="container">
-          <h1>🌾 FAW Infestation Detector</h1>
-          <p>
-            Upload a clear image of a maize leaf to identify possible{" "}
-            <strong>Fall Armyworm (FAW)</strong> infestation.
-          </p>
+          <div className="row">
+            {/* File Upload Section */}
+            <div className="col-12 col-md-6">
+              <div className="container">
+                <h1>🌾 FAW Infestation Detector</h1>
+                <p>
+                  Upload a clear image of a maize leaf to identify possible{" "}
+                  <strong>Fall Armyworm (FAW)</strong> infestation.
+                </p>
 
-          <input type="file" className="form-control" accept="image/*" onChange={handleFileChange} />
-          {preview && <img src={preview} alt="Preview" style={{ display: "block" }} />}
+                <input type="file" className="form-control" accept="image/*" onChange={handleFileChange} />
+                {preview && <img src={preview} alt="Preview" />}
 
-          <button className="btn btn-success mt-3 w-100" onClick={classify} disabled={loading}>
-            {loading ? "Analyzing..." : "Classify Image"}
-          </button>
+                <button className="btn btn-success mt-3 w-100" onClick={classify} disabled={loading}>
+                  {loading ? "Analyzing..." : "Classify Image"}
+                </button>
 
-          {result && (
-            <div>
-              <div className={`alert alert-${result.color}`} role="alert">
-                {result.message}
-              </div>
-              <div className="progress">
-                <div
-                  className={`progress-bar bg-${result.color}`}
-                  role="progressbar"
-                  style={{ width: `${result.score * 100}%` }}
-                ></div>
+                {result && (
+                  <div>
+                    <div className={`alert alert-${result.color}`} role="alert">
+                      {result.message}
+                    </div>
+                    <div className="progress">
+                      <div
+                        className={`progress-bar bg-${result.color}`}
+                        role="progressbar"
+                        style={{ width: `${result.score * 100}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-          )}
+
+            {/* Guidance Box Section */}
+            <div className="col-12 col-md-6">
+              <div className="container info-container">
+                <div className="alert alert-info text-start" style={{ fontSize: "0.95rem" }}>
+                  <strong>Which images work best?</strong>
+                  <ul style={{ marginTop: "8px", marginBottom: "0.25rem" }}>
+                    <li>Close-up of a single maize leaf (fill most of the frame)</li>
+                    <li>Clear focus, good lighting, minimal blur</li>
+                    <li>Avoid full-body people, cars, handwriting, or screenshots</li>
+                    <li>If possible, show the damaged area (tips, holes, discoloration)</li>
+                  </ul>
+                  <small className="text-muted">
+                    If the image is not crop-related, the model may return an incorrect prediction.
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
 
           <footer>
             <small>
