@@ -18,7 +18,3 @@ python-dotenv
 
 # Optional (recommended) for browser access
 starlette
-
-# Hugging Face local CLIP support
-transformers
-torch

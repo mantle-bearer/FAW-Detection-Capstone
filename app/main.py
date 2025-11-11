@@ -1,6 +1,7 @@
 import io
 import os
 from typing import Tuple
+
 import numpy as np
 import onnxruntime as ort
 from fastapi import FastAPI, File, UploadFile, HTTPException
@@ -8,45 +9,17 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
 
-# CLIP Integration (local)
-from transformers import pipeline
-
-# Initialize local CLIP model
-try:
-    print("🔄 Loading CLIP model...")
-    clip_pipeline = pipeline("zero-shot-image-classification", model="openai/clip-vit-base-patch32")
-    clip_enabled = True
-    print("✅ CLIP model loaded successfully.")
-except Exception as e:
-    clip_enabled = False
-    clip_pipeline = None
-    print(f"⚠️ CLIP model failed to load: {e}")
-
 # Configuration
 MODEL_PATH = os.getenv("MODEL_PATH", "DenseNet121_finetuned_final.onnx")
 IMG_SIZE = (224, 224)
 PREPROCESS = os.getenv("PREPROCESS", "0-1")  # options: '0-1' or 'imagenet'
-
-# Candidate labels for CLIP pre-check
-clip_labels = [
-    "maize crop leaf",
-    "plant with worms or insect damage",
-    "healthy green leaf",
-    "human face",
-    "animal",
-    "car",
-    "text or drawing",
-    "random object",
-]
-
-CLIP_THRESHOLD = 0.45
 
 app = FastAPI(title="FAW Detection API", version="1.0.0")
 
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # Allow all origins (or specify: ["https://your-domain.com"])
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -61,79 +34,98 @@ def load_session(path: str) -> Tuple[ort.InferenceSession, dict]:
     meta = {"name": inp.name, "shape": inp.shape, "dtype": inp.type}
     return sess, meta
 
-# Load ONNX model
+
+# Load model at startup
 try:
     session, input_meta = load_session(MODEL_PATH)
-    load_error = None
-    print("✅ ONNX model loaded successfully.")
 except Exception as e:
-    session, input_meta, load_error = None, None, e
-    print(f"⚠️ Model load error: {e}")
+    # Defer raising until first call if model not available at import-time in some environments
+    session = None
+    input_meta = None
+    load_error = e
+else:
+    load_error = None
+
 
 def _model_expects_channels_first(meta: dict) -> bool:
     shape = meta.get("shape")
-    return len(shape) == 4 and shape[1] == 3
+    # shape usually like [None, 3, 224, 224] for NCHW or [None, 224, 224, 3] for NHWC
+    if not shape or len(shape) != 4:
+        return False
+    # if second dim == 3 => channels first
+    return shape[1] == 3
+
 
 def preprocess_image(data: bytes) -> np.ndarray:
-    """Preprocess image bytes to model input."""
+    """Preprocess image bytes to model input.
+
+    Steps:
+    - open with PIL, convert to RGB
+    - resize to IMG_SIZE
+    - convert to float32
+    - scale according to PREPROCESS env var
+    - add batch dim and transpose if model expects channels-first
+    """
     img = Image.open(io.BytesIO(data)).convert("RGB")
     img = img.resize(IMG_SIZE, Image.BILINEAR)
     arr = np.asarray(img).astype(np.float32)
-    arr = arr / 127.5 - 1.0 if PREPROCESS == "imagenet" else arr / 255.0
+
+    if PREPROCESS == "imagenet":
+        # ImageNet-style TF preprocessing: scale to [-1, 1]
+        arr = arr / 127.5 - 1.0
+    else:
+        # default: scale to [0, 1]
+        arr = arr / 255.0
+
+    # determine channel order from loaded model metadata
     if input_meta and _model_expects_channels_first(input_meta):
+        # HWC -> CHW
         arr = np.transpose(arr, (2, 0, 1))
+
+    # add batch dim
     arr = np.expand_dims(arr, axis=0).astype(np.float32)
     return arr
 
-def detect_context_locally(data: bytes):
-    """Classify context using local CLIP zero-shot pipeline."""
-    if not clip_enabled:
-        return None
-    try:
-        image = Image.open(io.BytesIO(data)).convert("RGB")
-        results = clip_pipeline(image, candidate_labels=clip_labels)
-        best = max(results, key=lambda x: x["score"])
-        label, confidence = best["label"], best["score"]
-        relevant = label in clip_labels[:3] and confidence >= CLIP_THRESHOLD
-        return {"label": label, "confidence": confidence, "relevant": relevant}
-    except Exception as e:
-        print("⚠️ CLIP failed:", e)
-        return None
 
 @app.get("/health")
 def health():
     return {"status": "ok", "model_loaded": session is not None}
 
+
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
-    """Predict FAW (Fall Armyworm) presence from uploaded image file."""
+    """Predict FAW (Fall Armyworm) presence from uploaded image file.
+
+    Returns JSON with 'label' (FAW | No_FAW) and 'score' (float between 0 and 1).
+    """
     global session, input_meta
+    if load_error and session is None:
+        # try lazy load if possible
+        try:
+            session, input_meta = load_session(MODEL_PATH)
+            # clear load_error
+            # (if this fails, we'll raise below)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Model load error: {e}")
+
     if not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="Uploaded file must be an image")
 
     data = await file.read()
-
-    # Run CLIP pre-check
-    ctx = detect_context_locally(data)
-    if ctx and not ctx["relevant"]:
-        return {
-            "label": "Not relevant",
-            "reason": ctx["label"],
-            "confidence": ctx["confidence"],
-        }
-
-    # Run FAW detection
     try:
         model_input = preprocess_image(data)
-        input_name = input_meta.get("name") if input_meta else session.get_inputs()[0].name
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid image: {e}")
+
+    input_name = input_meta.get("name") if input_meta else session.get_inputs()[0].name
+
+    try:
         outputs = session.run(None, {input_name: model_input})
-        score = float(np.asarray(outputs[0]).ravel()[0])
-        label = "FAW Detected" if score >= 0.5 else "Healthy Crop"
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Inference error: {e}")
 
-    return {
-        "label": label,
-        "score": round(score, 4),
-        "context": ctx if ctx else "CLIP not available",
-    }
+    # assume model outputs a single score (sigmoid) or probability
+    score = float(np.asarray(outputs[0]).ravel()[0])
+    label = "FAW" if score >= 0.5 else "No_FAW"
+
+    return {"label": label, "score": score}
