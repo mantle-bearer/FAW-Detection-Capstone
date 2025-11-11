@@ -1,134 +1,164 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FAW Detection App</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FAW Early Infestation Detector</title>
+
+  <!-- React + Bootstrap CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+
   <style>
     body {
-      font-family: "Segoe UI", Arial, sans-serif;
-      margin: 0;
-      padding: 20px;
-      background: #f8fafc;
-      color: #222;
+      background: linear-gradient(135deg, #f0fff4, #d8f3dc);
+      min-height: 100vh;
       display: flex;
-      flex-direction: column;
       align-items: center;
+      justify-content: center;
+      font-family: "Segoe UI", sans-serif;
+    }
+    .container {
+      background: #fff;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      padding: 25px;
+      max-width: 440px;
       text-align: center;
     }
     h1 {
-      color: #006400;
-      margin-bottom: 10px;
+      color: #1b4332;
+      font-size: 1.7rem;
+      font-weight: 700;
     }
-    .upload-box {
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-      padding: 20px;
-      width: 90%;
-      max-width: 400px;
-    }
-    input[type="file"] {
-      margin: 15px 0;
+    p {
+      color: #333;
     }
     img {
       max-width: 100%;
-      border-radius: 8px;
-      margin-top: 10px;
+      margin-top: 15px;
+      border-radius: 10px;
       display: none;
     }
-    button {
-      background-color: #006400;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: background 0.3s;
+    .progress {
+      height: 10px;
+      margin-top: 10px;
     }
-    button:hover {
-      background-color: #228b22;
-    }
-    #result {
+    .alert {
+      font-weight: 600;
       margin-top: 15px;
-      font-weight: bold;
     }
-    @media (max-width: 500px) {
-      h1 { font-size: 20px; }
-      button { width: 100%; }
+    footer {
+      margin-top: 25px;
+      font-size: 0.85rem;
+      color: #555;
     }
   </style>
 </head>
 <body>
-  <h1>🌾 FAW Detection Classifier</h1>
-  <p>Upload a crop image to check for Fall Armyworm (FAW) damage.</p>
+  <div id="root"></div>
 
-  <div class="upload-box">
-    <input type="file" id="fileInput" accept="image/*">
-    <img id="preview" alt="Preview">
-    <button onclick="predict()">Classify Image</button>
-    <div id="result"></div>
-  </div>
-
-  <script>
-    // deployed API endpoint
+  <script type="text/babel">
     const API_URL = "https://faw-detection-capstone.onrender.com/predict";
 
-    const fileInput = document.getElementById('fileInput');
-    const preview = document.getElementById('preview');
-    const resultBox = document.getElementById('result');
+    function App() {
+      const [file, setFile] = React.useState(null);
+      const [preview, setPreview] = React.useState(null);
+      const [result, setResult] = React.useState(null);
+      const [loading, setLoading] = React.useState(false);
 
-    // Show image preview
-    fileInput.addEventListener('change', () => {
-      const file = fileInput.files[0];
-      if (file) {
-        preview.src = URL.createObjectURL(file);
-        preview.style.display = 'block';
-        resultBox.textContent = '';
-      }
-    });
-
-    async function predict() {
-      const file = fileInput.files[0];
-      if (!file) {
-        alert("Please select an image first.");
-        return;
-      }
-
-      resultBox.textContent = "⏳ Analyzing... Please wait.";
-
-      const formData = new FormData();
-      formData.append("file", file);
-
-      try {
-        const response = await fetch(API_URL, {
-          method: "POST",
-          body: formData
-        });
-
-        if (!response.ok) throw new Error("Failed to get prediction.");
-
-        const data = await response.json();
-        const label = data.label || "Unknown";
-        const score = (data.score * 100).toFixed(2);
-
-        if (label.toLowerCase().includes("faw")) {
-          resultBox.textContent = `🐛 The image likely shows *FAW Damage* (Confidence: ${score}%)`;
-          resultBox.style.color = "red";
-        } else if (label.toLowerCase().includes("no")) {
-          resultBox.textContent = `🌿 The image looks *Healthy* (Confidence: ${score}%)`;
-          resultBox.style.color = "green";
-        } else {
-          resultBox.textContent = `🤔 Unable to confidently classify this image. Please try another.`;
-          resultBox.style.color = "#555";
+      const handleFileChange = (e) => {
+        const selected = e.target.files[0];
+        if (selected) {
+          setFile(selected);
+          setPreview(URL.createObjectURL(selected));
+          setResult(null);
         }
+      };
 
-      } catch (error) {
-        resultBox.textContent = "⚠️ Error: " + error.message;
-        resultBox.style.color = "orange";
-      }
+      const classify = async () => {
+        if (!file) {
+          alert("Please upload a crop image first.");
+          return;
+        }
+        setLoading(true);
+        setResult(null);
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        try {
+          const res = await fetch(API_URL, { method: "POST", body: formData });
+          if (!res.ok) throw new Error("API request failed");
+          const data = await res.json();
+
+          const { label, score } = data;
+          let message, color, emoji;
+
+          if (score >= 0.45 && score <= 0.55) {
+            message = "🤔 The model is uncertain — please upload a clearer image.";
+            color = "warning";
+          } else if (label === "FAW") {
+            message = `🐛 Fall Armyworm detected — Infestation likely (Confidence: ${(score * 100).toFixed(1)}%)`;
+            color = "danger";
+          } else if (label === "No_FAW") {
+            message = `🌿 Crop appears healthy (Confidence: ${(100 - score * 100).toFixed(1)}%)`;
+            color = "success";
+          } else {
+            message = "⚠️ Unexpected result. Please try again.";
+            color = "secondary";
+          }
+
+          setResult({ label, score, message, color });
+        } catch (err) {
+          setResult({ message: "⚠️ Error connecting to API.", color: "secondary" });
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      return (
+        <div className="container">
+          <h1>🌾 FAW Infestation Detector</h1>
+          <p>
+            Upload a clear image of a maize leaf to identify possible{" "}
+            <strong>Fall Armyworm (FAW)</strong> infestation.
+          </p>
+
+          <input type="file" className="form-control" accept="image/*" onChange={handleFileChange} />
+          {preview && <img src={preview} alt="Preview" style={{ display: "block" }} />}
+
+          <button className="btn btn-success mt-3 w-100" onClick={classify} disabled={loading}>
+            {loading ? "Analyzing..." : "Classify Image"}
+          </button>
+
+          {result && (
+            <div>
+              <div className={`alert alert-${result.color}`} role="alert">
+                {result.message}
+              </div>
+              <div className="progress">
+                <div
+                  className={`progress-bar bg-${result.color}`}
+                  role="progressbar"
+                  style={{ width: `${result.score * 100}%` }}
+                ></div>
+              </div>
+            </div>
+          )}
+
+          <footer>
+            <small>
+              Empowering farmers with AI to detect pests early 🌍
+            </small>
+          </footer>
+        </div>
+      );
     }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
   </script>
 </body>
 </html>
