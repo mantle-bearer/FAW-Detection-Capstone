@@ -4,7 +4,7 @@ from typing import Tuple
 
 import numpy as np
 import onnxruntime as ort
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, File, UploadFile, HTTPException, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
