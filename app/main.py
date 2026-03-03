@@ -91,16 +91,12 @@ def preprocess_image(data: bytes) -> np.ndarray:
 @app.get("/", tags=["Home"])
 async def root(request: Request):
     """Root endpoint"""
-    return success_response(
-        status_code=status.HTTP_200_OK,
-        message=f"Welcome to FAW Detection",
-        data={
+    return {
             "version": "1.0",
             "description": "Predict FAW (Fall Armyworm) presence from uploaded image file.",
             "docs": f"{request.base_url}docs",
             "health": f"{request.base_url}health"
         }
-    )
 
 
 @app.get("/health")
